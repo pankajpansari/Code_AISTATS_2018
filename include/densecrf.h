@@ -63,11 +63,25 @@ protected:
   // How to stop inference
   bool compute_kl = false;
 
-  // Don't copy this object, bad stuff will happen
+    // Don't copy this object, bad stuff will happen
   DenseCRF( DenseCRF & o ){}
+
+
 public:
   // Create a dense CRF model of size N with M labels
   DenseCRF( int N, int M, int H, int W );
+  int nvar;
+  int nlabel;
+  float clique_potts;
+  int nclique;
+  std::vector< std::vector<int> > clique_members;
+  std::vector< std::vector<int> > variable_clique_id; //which cliques does a variables belong to?
+  std::vector<double> clique_weight;
+  std::vector<int> clique_sizes;
+  std::vector< std::vector<float> > clique_state;
+  std::vector<float> last_clique_val;
+
+
   virtual ~DenseCRF();
 
   // Add  a pairwise potential defined over some feature space
@@ -134,6 +148,12 @@ void applyFilter_rhst(MatrixXf & Qs, MatrixXf &Q);
 void applyFilter_dc(MatrixXf & Qs, MatrixXf &Q);
 void applyFullBruteForce(MatrixXf &out, MatrixXf &in);
 void applyFullFilter(MatrixXf &out, MatrixXf &in);
+
+//Higher-order submodular inference
+MatrixXf get_clique_term(MatrixXf &grad);
+float delta_submodular_higher_Potts(int v);
+float update_clique_state(int v, int c);
+void load_cliques(const std::string & fileName);
 //void compare_filter(MatrixXf & Q, MatrixXf & ph_grad, MatrixXf & bf_grad) const;
 //
 

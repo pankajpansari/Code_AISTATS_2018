@@ -1,4 +1,5 @@
 #include <chrono>
+#include <vector>
 #include <cmath>
 #include <cstring>
 #include <fstream>
@@ -159,7 +160,6 @@ void SparseCRF::greedyAlgorithm(MatrixXf &out, MatrixXf &grad, int grid_size){
         VectorXf grad_j = grad.row(j);
 
         std::vector<int> y(grad_j.size());
-        iota(y.begin(), y.end(), 0);
         auto comparator = [&grad_j](int a, int b){ return grad_j[a] > grad_j[b]; };
         sort(y.begin(), y.end(), comparator);
 
@@ -301,7 +301,6 @@ void SparseCRF::greedyAlgorithmBadExtension(MatrixXf &out, MatrixXf &grad, int g
         VectorXf grad_j = grad.col(j);
 
         std::vector<int> y(grad_j.size());
-        iota(y.begin(), y.end(), 0);
         auto comparator = [&grad_j](int a, int b){ return grad_j[a] > grad_j[b]; };
         sort(y.begin(), y.end(), comparator);
 
@@ -320,7 +319,6 @@ void SparseCRF::greedyAlgorithmBadExtension(MatrixXf &out, MatrixXf &grad, int g
         VectorXf grad_j = grad.row(j);
 
         std::vector<int> y(grad_j.size());
-        iota(y.begin(), y.end(), 0);
         auto comparator = [&grad_j](int a, int b){ return grad_j[a] > grad_j[b]; };
         sort(y.begin(), y.end(), comparator);
 

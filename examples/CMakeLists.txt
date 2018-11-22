@@ -18,8 +18,8 @@ target_link_libraries(file_storage probimage color_to_label ${OpenCV_LIBS})
 
 # Executables
 # inference.cpp
-#add_executable(inference inference.cpp)
-#target_link_libraries(inference densecrf file_storage densecrf_utils tree_utils)
+add_executable(inference inference.cpp)
+target_link_libraries(inference densecrf file_storage densecrf_utils tree_utils)
 
 #add_executable(inference_tree inference_tree.cpp)
 #target_link_libraries(inference_tree densecrf file_storage densecrf_utils tree_utils)
@@ -39,8 +39,8 @@ target_link_libraries(file_storage probimage color_to_label ${OpenCV_LIBS})
 #add_executable(inference_sparse_synthetic_tree inference_sparse_synthetic_tree.cpp)
 #target_link_libraries(inference_sparse_synthetic_tree sparsecrf densecrf file_storage densecrf_utils tree_utils)
 
-add_executable(inference_sparse_synthetic inference_sparse_synthetic.cpp)
-target_link_libraries(inference_sparse_synthetic sparsecrf densecrf file_storage densecrf_utils tree_utils)
+#add_executable(inference_sparse_synthetic inference_sparse_synthetic.cpp)
+#target_link_libraries(inference_sparse_synthetic sparsecrf densecrf file_storage densecrf_utils tree_utils)
 
 #add_executable(inference_sparse_stereo inference_sparse_stereo.cpp)
 #target_link_libraries(inference_sparse_stereo densecrf file_storage densecrf_utils)

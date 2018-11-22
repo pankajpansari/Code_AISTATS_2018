@@ -9,8 +9,7 @@
 
 using namespace Eigen;
 
-void image_inference(std::string image_file, std::string unary_file, std::string tree_file, std::string dataset_name, std::string method, std::string results_path, float spc_std, float spc_potts, 
-            float bil_spcstd, float bil_colstd, float bil_potts)
+void image_inference(std::string image_file, std::string unary_file, std::string tree_file, std::string dataset_name, std::string method, std::string results_path, float spc_std, float spc_potts, float bil_spcstd, float bil_colstd, float bil_potts, float clique_weight)
 {
     img_size size = {-1, -1};
       
@@ -26,6 +25,7 @@ void image_inference(std::string image_file, std::string unary_file, std::string
           unaries = load_unary_from_text(unary_file, size, 1);
     }
 
+    std::cout << "Unaries loaded" << std::endl;
     std::vector<node> G;
     if(method == "submod_tree"){
         G = readTree(tree_file);
@@ -38,6 +38,9 @@ void image_inference(std::string image_file, std::string unary_file, std::string
 
     DenseCRF2D crf(size.width, size.height, unaries.rows());
     crf.setUnaryEnergy(unaries);
+    crf.load_cliques(unary_file);
+    crf.clique_potts = clique_weight; 
+    std::cout << "clique information loaded " << std::endl;
     if(method == "mf_tree"){
         G = readTree(tree_file);
         std::cout << "using mf tree" << std::endl;
@@ -121,8 +124,8 @@ void image_inference(std::string image_file, std::string unary_file, std::string
 int main(int argc, char* argv[]) 
 {
     // set input, output paths and method
-    if(argc < 11)
-        std::cout << "Usage:inference ../../data/stereo/tsukuba_left.png ../../data/stereo/unary_tsukuba.txt mf . Stereo_special 1.64 12.99 50.84 1.51 1.10 ../../data/tree/tsukuba_tree1.txt" << std::endl;
+    if(argc < 12)
+        std::cout << "Usage:inference ../../data/stereo/tsukuba_left.png ../../data/stereo/unary_tsukuba.txt mf . Stereo_special 1.64 12.99 50.84 1.51 1.10 1 ../../data/tree/tsukuba_tree1.txt" << std::endl;
         
     std::string image_file = argv[1];
     std::string unary_file = argv[2];
@@ -134,18 +137,18 @@ int main(int argc, char* argv[])
      float  bil_spcstd = std::stof(argv[8]);
      float  bil_colstd = std::stof(argv[9]);
      float  bil_potts = std::stof(argv[10]);
+     float  clique_weight = std::stof(argv[11]);
 
      std::string tree_file = "";
 
     if (argc == 12)
-        tree_file = argv[11];
+        tree_file = argv[12];
 
     std::cout << "#COMMAND: " << argv[0] << " " << image_file << " " << unary_file << " " << method << " " 
         << results_path << " " << dataset_name << " " << spc_std << " " << spc_potts << " " << bil_spcstd << " "
         << bil_colstd << " " << bil_potts << " " << std::endl;
 
-    image_inference(image_file, unary_file, tree_file, dataset_name, method, results_path, spc_std, spc_potts, 
-            bil_spcstd, bil_colstd, bil_potts);
+    image_inference(image_file, unary_file, tree_file, dataset_name, method, results_path, spc_std, spc_potts, bil_spcstd, bil_colstd, bil_potts, clique_weight);
 
     return 0;
 
