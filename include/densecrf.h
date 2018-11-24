@@ -74,6 +74,13 @@ public:
   int nlabel;
   float clique_potts;
   int nclique;
+//  MatrixXi clique_members;
+//  MatrixXi variable_clique_id;
+//  VectorXd clique_weight;
+//  VectorXi clique_sizes;
+//  MatrixXf clique_state;
+//  VectorXf last_clique_val;
+
   std::vector< std::vector<int> > clique_members;
   std::vector< std::vector<int> > variable_clique_id; //which cliques does a variables belong to?
   std::vector<double> clique_weight;

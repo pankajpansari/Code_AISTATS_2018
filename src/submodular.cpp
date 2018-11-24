@@ -39,46 +39,36 @@ void DenseCRF::load_cliques(const std::string & fileName) {
     myfile >> nclique;
 
     std::vector<float> temp(nlabel, 0);
+    int clique_count = 0;
     for(int clique = 0; clique < nclique; clique++){
         int size;
         myfile >> size;
-        clique_sizes.push_back(size);
-        std::vector<int> current_clique_members;
-        for(int variable_count = 0; variable_count < size; variable_count++){
-            int variable_id;
-            myfile >> variable_id;
-            variable_clique_id[variable_id - 1].push_back(clique);
-            current_clique_members.push_back(variable_id - 1);
+        if(size > 0){
+            clique_sizes.push_back(size);
+            std::vector<int> current_clique_members;
+            for(int variable_count = 0; variable_count < size; variable_count++){
+                int variable_id;
+                myfile >> variable_id;
+                variable_clique_id[variable_id - 1].push_back(clique_count);
+                current_clique_members.push_back(variable_id - 1);
+            }
+            clique_members.push_back(current_clique_members);
+            double weight;
+            myfile >> weight;
+            clique_weight.push_back(weight);
+            clique_state.push_back(temp);
+            last_clique_val.push_back(0);
+            clique_count += 1;
+        }else{
+            for(int variable_count = 0; variable_count < size; variable_count++)
+                myfile >> dummy;
+            myfile >> dummy; 
+         
         }
-        clique_members.push_back(current_clique_members);
-        double weight;
-        myfile >> weight;
-        clique_weight.push_back(weight);
-        clique_state.push_back(temp);
-        last_clique_val.push_back(0);
+
     }
-
+    nclique = clique_count;
     myfile.close();
-}
-
-
-void DenseCRF::compareWithBf(MatrixXf &pairwise_filter, MatrixXf & grad){
-
-    MatrixXf pairwise_bf = MatrixXf::Zero(M_, N_);
-
-    std::cout << "Doing bf computation" << std::endl;
-    applyBruteForce(pairwise_bf, grad);
-
-   //check the angle
-    MatrixP dot_tmp(M_, N_);
-    double costh = dotProduct(pairwise_filter, pairwise_bf, dot_tmp)/
-       (sqrt(dotProduct(pairwise_filter, pairwise_filter, dot_tmp))*sqrt(dotProduct(pairwise_bf, pairwise_bf, dot_tmp)));
-    std::cout << "bf-filter #cos-theta: " << costh << std::endl;
-
-    //check norms
-    std::cout << "Filter o/p norm = " << pairwise_filter.norm() << std::endl;
-    std::cout << "Bf o/p norm = " << pairwise_bf.norm() << std::endl;
-
 }
 
 float DenseCRF::update_clique_state(int v, int c){
@@ -89,9 +79,9 @@ float DenseCRF::update_clique_state(int v, int c){
             if(clique_state[c][j] > 0 && clique_state[c][j] < 1)
                 fn_val += 0.5;
         }
-        if(fn_val >= 1)
-            return 1;
-        else
+//        if(fn_val >= 1)
+//            return 1;
+//        else
             return fn_val;
 }
 
@@ -105,11 +95,35 @@ float DenseCRF::delta_submodular_higher_Potts(int v){
             int clique_id = cliques[c];
             float last_val = last_clique_val[clique_id];
             float new_val = update_clique_state(v, clique_id);
-            fn_difference += new_val - last_val;
+            fn_difference += clique_weight[clique_id]*(new_val - last_val);
             last_clique_val[clique_id] = new_val;
         }
         return fn_difference;
 }
+
+//float DenseCRF::delta_submodular_higher_Potts_naive(int v, vector<int> S){
+//        int var = v/M_;
+//        int label = v % M_;
+//        std::vector<int> cliques = variable_clique_id[var];  
+//        double fn_difference = 0;
+//
+//        for(int c = 0; c < cliques.size(); c++){
+//            int clique_id = cliques[c];
+//            for(int t = 0; t < clique_members[clique_id].size(); c++){
+//                for(int j = 0; j < nlabel; j++){
+//                    int elem = clique_members[clique_id][t]*M_ + j;
+//                    bool in_S = 0;
+//                    for(int i = 0; i < S.size(); i++){
+//                        if(i == elem)
+//                            in_S = 1;
+//                    }
+//
+//            }
+//
+//       }
+//        return fn_difference;
+//
+//}
 
 MatrixXf DenseCRF::get_clique_term(MatrixXf &grad){
 
@@ -169,7 +183,11 @@ void DenseCRF::greedyAlgorithm(MatrixXf &out, MatrixXf &grad){
     MatrixXf clique = MatrixXf::Zero(M_, N_);
     clique = get_clique_term(grad);
  
-    out = unary - pairwise + clique_potts*clique; //-ve because original code makes use of negative Potts potential (in labelcompatibility.cpp), but we want to use positive weights
+//    out = unary - pairwise; //-ve because original code makes use of negative Potts potential (in labelcompatibility.cpp), but we want to use positive weights
+//    std::cout << pairwise.maxCoeff() << " " << pairwise.minCoeff() << std::endl;
+//    std::cout << clique.maxCoeff() << " " << clique.minCoeff() << std::endl;
+    out = unary - pairwise + clique_potts*clique; 
+//    out = unary - pairwise; 
 
 }
 
@@ -208,8 +226,9 @@ MatrixXf DenseCRF::submodularFrankWolfe_Potts( MatrixXf & init, int width, int h
 
     objVal = getObj(Q);
     logFile << "0 " << objVal << " " <<  duration << " " << step << std::endl;
+    std::cout << "Iter: 0 Obj = " << objVal << " Time = " <<  duration << " Step size = " << step << std::endl;
 
-    for(int k = 1; k <= 10; k++){
+    for(int k = 1; k <= 20; k++){
 
       getConditionalGradient(Qs, Q);
 
