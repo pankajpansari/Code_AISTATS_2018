@@ -43,14 +43,18 @@ void DenseCRF::load_cliques(const std::string & fileName) {
     for(int clique = 0; clique < nclique; clique++){
         int size;
         myfile >> size;
-        if(size > 0){
+        if(size > 5){
             clique_sizes.push_back(size);
             std::vector<int> current_clique_members;
             for(int variable_count = 0; variable_count < size; variable_count++){
                 int variable_id;
                 myfile >> variable_id;
-                variable_clique_id[variable_id - 1].push_back(clique_count);
-                current_clique_members.push_back(variable_id - 1);
+                int j = (variable_id -1) % H_;
+                int i = (variable_id - 1)/H_;
+                int new_var_id = j * W_ + i;
+
+                variable_clique_id[new_var_id].push_back(clique_count);
+                current_clique_members.push_back(new_var_id);
             }
             clique_members.push_back(current_clique_members);
             double weight;
